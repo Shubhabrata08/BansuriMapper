@@ -4,7 +4,10 @@ $fixture = Get-Content (Join-Path $PSScriptRoot '..\artifacts\reference.json') -
 $steps = [System.Collections.Generic.List[object]]::new()
 function Step($command, $arguments) { $steps.Add(@{command=$command;args=$arguments}) }
 function Check($id, $value) { Step 'assert' @{'automation-id'=$id;condition='NameEquals';value=$value;timeout='2'} }
-function Toggle($id, $value='on') { Step 'uia-invoke' @{id=$id;pattern='toggle';value=$value} }
+function Toggle($id, $value='on') {
+    if ($id.StartsWith('Note_')) { Step 'uia-invoke' @{id=$id;pattern='pick';value='select'} }
+    else { Step 'uia-invoke' @{id=$id;pattern='toggle';value=$value} }
+}
 function SelectIndex($id, $index) {
     Step 'uia-invoke' @{id=$id;pattern='expand';value='collapse'}
     Step 'uia-invoke' @{id=$id;pattern='focus'}

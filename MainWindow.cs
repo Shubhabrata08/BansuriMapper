@@ -15,21 +15,23 @@ namespace BansuriMapper;
 
 public sealed class MainWindow : Window
 {
-    private static readonly Color Ink = ColorHelper.FromArgb(255, 240, 243, 233);
-    private static readonly Color Muted = ColorHelper.FromArgb(255, 167, 182, 170);
-    private static readonly Color Gold = ColorHelper.FromArgb(255, 212, 180, 119);
-    private static readonly Color Mint = ColorHelper.FromArgb(255, 155, 200, 168);
-    private static readonly Color Line = ColorHelper.FromArgb(255, 49, 66, 60);
+    private static readonly Color Ink = ThemeColor("BansuriInkColor");
+    private static readonly Color Muted = ThemeColor("BansuriMutedColor");
+    private static readonly Color Gold = ThemeColor("BansuriGoldColor");
+    private static readonly Color Mint = ThemeColor("BansuriMintColor");
+    private static readonly Color Line = ThemeColor("BansuriOutlineColor");
+    private static readonly Color Background = ThemeColor("BansuriBackgroundColor");
     private readonly MapperState state = new();
     private readonly ComboBox thaat = new(), reference = new(), flute = new();
     private readonly ToggleButton sharps = new(), flats = new();
-    private readonly CheckBox alternate = new();
+    private readonly ToggleSwitch alternate = new() { OnContent = null, OffContent = null, MinWidth = 0 };
+    private readonly Grid alternateRow = new() { ColumnSpacing = 12 };
     private readonly Grid settings = new(), workspace = new(), information = new();
-    private readonly StackPanel shell = new() { Spacing = 20, MaxWidth = 1180, HorizontalAlignment = HorizontalAlignment.Stretch };
-    private readonly StackPanel rows = new() { Spacing = 8 };
+    private readonly StackPanel shell = new() { Spacing = 24, MaxWidth = 1120, HorizontalAlignment = HorizontalAlignment.Stretch };
+    private readonly ListView rows = new() { SelectionMode = ListViewSelectionMode.Single, IsItemClickEnabled = false };
     private readonly Grid holes = new() { ColumnSpacing = 6 };
-    private readonly TextBlock summary = Text("", 27, Gold, true), pills = Text("", 11, Muted);
-    private readonly TextBlock headingTitle = Text("Bansuri Fingering Mapper", 46, Ink, true);
+    private readonly TextBlock summary = Text("", 28, Gold, true), pills = Text("", 12, Muted);
+    private readonly TextBlock headingTitle = Text("Bansuri Fingering Mapper", 40, Ink, true);
     private readonly TextBlock sequence = Text("", 17, Ink, true);
     private readonly TextBlock selected = Text("", 48, Gold, true), pitch = Text("", 26);
     private readonly TextBlock frequency = Text("", 11, Muted), relative = Text("", 11, Gold);
@@ -44,10 +46,16 @@ public sealed class MainWindow : Window
     {
         Title = "Bansuri Fingering Mapper";
         AppWindow.Resize(new Windows.Graphics.SizeInt32(1280, 1000));
-        AppWindow.TitleBar.BackgroundColor = ColorHelper.FromArgb(255, 16, 25, 24);
+        AppWindow.TitleBar.BackgroundColor = Background;
         AppWindow.TitleBar.ForegroundColor = Ink;
-        AppWindow.TitleBar.ButtonBackgroundColor = ColorHelper.FromArgb(255, 16, 25, 24);
+        AppWindow.TitleBar.ButtonBackgroundColor = Background;
         AppWindow.TitleBar.ButtonForegroundColor = Ink;
+        AppWindow.TitleBar.InactiveBackgroundColor = Background;
+        AppWindow.TitleBar.InactiveForegroundColor = Muted;
+        AppWindow.TitleBar.ButtonInactiveBackgroundColor = Background;
+        AppWindow.TitleBar.ButtonInactiveForegroundColor = Muted;
+        AppWindow.TitleBar.ButtonHoverBackgroundColor = ThemeColor("BansuriSurfaceVariantColor");
+        AppWindow.TitleBar.ButtonHoverForegroundColor = Ink;
         if (AppWindow.Presenter is OverlappedPresenter presenter)
         {
             presenter.PreferredMinimumWidth = 390;
@@ -60,19 +68,27 @@ public sealed class MainWindow : Window
             Padding = new Thickness(24, 30, 24, 36),
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            Background = Brush(ColorHelper.FromArgb(255, 16, 25, 24)),
+            Background = Brush(Background),
             RequestedTheme = ElementTheme.Dark
         };
         Content = scroll;
         Identify(scroll, "PageScroll", "Bansuri mapper page");
         var heading = new StackPanel { Spacing = 10 };
-        heading.Children.Add(Text("\u25cf  H I N D U S T A N I   F L U T E   T O O L K I T", 11, Gold));
+        var brand = Text("HINDUSTANI FLUTE TOOLKIT", 12, Gold, true);
+        brand.CharacterSpacing = 90;
+        heading.Children.Add(brand);
         AutomationProperties.SetHeadingLevel(headingTitle, AutomationHeadingLevel.Level1);
         heading.Children.Add(headingTitle);
         heading.Children.Add(Text("Choose a thaat, set the bansuri that defines your reference Sa, then choose the flute you are mapping. The Hindustani swaras stay relative to Sa (Sa, Re, Ga\u2026), while the app independently calculates the hole combinations needed on the flute in your hands.", 14, Muted));
         shell.Children.Add(heading);
         BuildSettings();
-        shell.Children.Add(Panel(settings));
+        var settingsContent = new StackPanel { Spacing = 20 };
+        var settingsHeading = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12 };
+        settingsHeading.Children.Add(new FontIcon { Glyph = "\uE713", FontSize = 20, Foreground = Brush(Gold) });
+        settingsHeading.Children.Add(Text("Scale & instruments", 20, Ink, true));
+        settingsContent.Children.Add(settingsHeading);
+        settingsContent.Children.Add(settings);
+        shell.Children.Add(Panel(settingsContent));
         var summaryGroup = new StackPanel { Spacing = 10 };
         summaryGroup.Children.Add(summary);
         summaryGroup.Children.Add(pills);
@@ -103,22 +119,22 @@ public sealed class MainWindow : Window
         shell.Children.Add(links);
         shell.SizeChanged += (_, args) => Layout(args.NewSize.Width);
         Render();
-        Layout(1180);
+        Layout(1120);
     }
 
     private void BuildSettings()
     {
-        settings.ColumnSpacing = 16;
-        settings.RowSpacing = 16;
+        settings.ColumnSpacing = 20;
+        settings.RowSpacing = 20;
         foreach (var name in Mapper.Thaats.Keys) thaat.Items.Add(name);
         for (var i = 0; i < 12; i++)
         {
             reference.Items.Add(new ComboBoxItem());
             flute.Items.Add(new ComboBoxItem());
         }
-        settings.Children.Add(Field("THAAT", thaat, "Select one of the ten commonly taught Hindustani thaats.", "ThaatSelect"));
-        settings.Children.Add(Field("REFERENCE BANSURI \u00b7 SA", reference, "Holes 1\u20133 closed are always called Sa. This setting defines Sa\u2019s actual pitch.", "ReferenceSelect"));
-        settings.Children.Add(Field("FLUTE BEING MAPPED", flute, "Choose the instrument you will play. The app calculates its hole pattern for each reference swara.", "FluteSelect"));
+        settings.Children.Add(Field("Thaat", thaat, "Select one of the ten commonly taught Hindustani thaats.", "ThaatSelect"));
+        settings.Children.Add(Field("Reference bansuri \u00b7 Sa", reference, "Holes 1\u20133 closed are always called Sa. This setting defines Sa\u2019s actual pitch.", "ReferenceSelect"));
+        settings.Children.Add(Field("Flute being mapped", flute, "Choose the instrument you will play. The app calculates its hole pattern for each reference swara.", "FluteSelect"));
         var modes = new Grid { ColumnSpacing = 4 };
         modes.ColumnDefinitions.Add(new ColumnDefinition());
         modes.ColumnDefinitions.Add(new ColumnDefinition());
@@ -126,7 +142,7 @@ public sealed class MainWindow : Window
         flats.Content = "Flats (\u266d)";
         foreach (var button in new[] { sharps, flats })
         {
-            button.MinHeight = 44;
+            button.MinHeight = 40;
             button.HorizontalAlignment = HorizontalAlignment.Stretch;
             button.Padding = new Thickness(6);
             modes.Children.Add(button);
@@ -134,8 +150,11 @@ public sealed class MainWindow : Window
         Grid.SetColumn(flats, 1);
         Identify(sharps, "SharpMode", "Sharps (#)");
         Identify(flats, "FlatMode", "Flats (\u266d)");
-        settings.Children.Add(Field("WESTERN NOTE SPELLING", modes, "Choose one accidental style for all Western pitch names and flute keys.", "Notation"));
-        var reset = new Button { Content = "Reset to C \u00b7 Bhairav", MinHeight = 44, HorizontalAlignment = HorizontalAlignment.Stretch };
+        settings.Children.Add(Field("Western note spelling", modes, "Choose one accidental style for all Western pitch names and flute keys.", "Notation"));
+        var resetContent = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        resetContent.Children.Add(new FontIcon { Glyph = "\uE72C", FontSize = 16 });
+        resetContent.Children.Add(Text("Reset to C \u00b7 Bhairav", 14));
+        var reset = new Button { Content = resetContent, MinHeight = 40, HorizontalAlignment = HorizontalAlignment.Right };
         Identify(reset, "Reset", "Reset to C Bhairav");
         settings.Children.Add(reset);
         thaat.SelectionChanged += (_, _) => { if (!updating && thaat.SelectedItem is string name) { state.SetThaat(name); Render(); } };
@@ -150,8 +169,8 @@ public sealed class MainWindow : Window
 
     private Border BuildDetail()
     {
-        var content = new StackPanel { Spacing = 15 };
-        content.Children.Add(Text("SELECTED SWARA \u00b7 FINGERING DETAIL", 10, Muted));
+        var content = new StackPanel { Spacing = 16 };
+        content.Children.Add(Text("SELECTED SWARA", 12, Muted, true));
         var head = new Grid { ColumnSpacing = 12 };
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         head.ColumnDefinitions.Add(new ColumnDefinition());
@@ -165,7 +184,9 @@ public sealed class MainWindow : Window
         content.Children.Add(new Border { Height = 1, Background = Brush(Line) });
         content.Children.Add(Text("Required hole positions\nBlowing end \u2192 lower end", 12, Muted));
         for (var i = 0; i < 6; i++) holes.ColumnDefinitions.Add(new ColumnDefinition());
-        content.Children.Add(Panel(holes, 12));
+        var diagram = Panel(holes, 12);
+        diagram.Background = Brush(ThemeColor("BansuriSurfaceVariantColor"));
+        content.Children.Add(diagram);
         var legend = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14 };
         foreach (var (stateChar, label) in new[] { ('X', "Closed"), ('H', "Half-covered"), ('O', "Open") })
         {
@@ -185,11 +206,14 @@ public sealed class MainWindow : Window
         code.CharacterSpacing = 160;
         Identify(code, "FingeringCode");
         content.Children.Add(code);
-        alternate.Content = Text("Use alternate Pa fingering\n(H1 open, H2\u2013H6 closed)", 12, Muted);
+        alternateRow.ColumnDefinitions.Add(new ColumnDefinition());
+        alternateRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        alternateRow.Children.Add(Text("Use alternate Pa fingering\n(H1 open, H2\u2013H6 closed)", 12, Muted));
+        alternateRow.Children.Add(alternate);
+        Grid.SetColumn(alternate, 1);
         Identify(alternate, "AlternatePa", "Use alternate Pa fingering (H1 open, H2 to H6 closed)");
-        alternate.Checked += (_, _) => SetAlternate();
-        alternate.Unchecked += (_, _) => SetAlternate();
-        content.Children.Add(alternate);
+        alternate.Toggled += (_, _) => SetAlternate();
+        content.Children.Add(alternateRow);
         var panel = Panel(content);
         panel.VerticalAlignment = VerticalAlignment.Top;
         return panel;
@@ -198,9 +222,13 @@ public sealed class MainWindow : Window
     private Border BuildMap()
     {
         var content = new StackPanel { Spacing = 12 };
-        content.Children.Add(Text("Swara map", 23, Ink, true));
-        content.Children.Add(Text("Sa-relative swaras \u00b7 flute-specific holes", 11, Muted));
+        content.Children.Add(Text("Swara map", 20, Ink, true));
+        content.Children.Add(Text("Sa-relative swaras \u00b7 flute-specific holes", 12, Muted));
         Identify(rows, "NoteList", "Thaat note map");
+        rows.ItemContainerStyle = (Style)Application.Current.Resources["BansuriNoteItemStyle"];
+        ScrollViewer.SetVerticalScrollBarVisibility(rows, ScrollBarVisibility.Disabled);
+        ScrollViewer.SetVerticalScrollMode(rows, ScrollMode.Disabled);
+        rows.SelectionChanged += (_, _) => { if (!updating && rows.SelectedItem is ListViewItem item) SelectNote((string)item.Tag); };
         content.Children.Add(rows);
         content.Children.Add(Text("The six dots in each row are holes 1\u20136, from nearest the blowing end to furthest away. Swara identity comes from the selected reference bansuri\u2019s Sa and the chosen thaat. The Western pitch is a separate sounding-pitch readout; it does not rename the swara.", 11, Muted));
         return Panel(content, 18);
@@ -220,7 +248,7 @@ public sealed class MainWindow : Window
             }
             reference.SelectedIndex = state.Reference; flute.SelectedIndex = state.Flute;
             sharps.IsChecked = !state.Flats; flats.IsChecked = state.Flats;
-            alternate.IsChecked = state.Alternate;
+            alternate.IsOn = state.Alternate;
             var refName = Mapper.Root(state.Reference, state.Flats);
             var fluteName = Mapper.Root(state.Flute, state.Flats);
             summary.Text = $"{state.Thaat} / {refName} reference \u00b7 {fluteName} flute";
@@ -241,7 +269,7 @@ public sealed class MainWindow : Window
             relative.Text = note.RelativeText;
             techniqueTitle.Text = note.TechniqueTitle; techniqueText.Text = note.TechniqueText;
             code.Text = note.Fingering.Pattern;
-            alternate.Visibility = note.CanAlternate ? Visibility.Visible : Visibility.Collapsed;
+            alternateRow.Visibility = note.CanAlternate ? Visibility.Visible : Visibility.Collapsed;
             holes.Children.Clear();
             for (var i = 0; i < 6; i++)
             {
@@ -261,41 +289,37 @@ public sealed class MainWindow : Window
 
     private void RenderRows(IReadOnlyList<MappedNote> notes)
     {
-        // Keep the focused native button alive when only its contents change.
-        if (rows.Children.Count != notes.Count || rows.Children.OfType<ToggleButton>().Select(b => (string)b.Tag).Where((key, i) => key != notes[i].Swara.Key).Any())
+        // Preserve the focused list item while refreshing the pitch readouts.
+        if (rows.Items.Count != notes.Count || rows.Items.OfType<ListViewItem>().Select(item => (string)item.Tag).Where((key, i) => key != notes[i].Swara.Key).Any())
         {
-            rows.Children.Clear();
+            rows.Items.Clear();
             foreach (var note in notes)
             {
-                var button = new ToggleButton { Tag = note.Swara.Key, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(12), CornerRadius = new CornerRadius(12) };
-                button.Checked += (_, _) => SelectNote((string)button.Tag);
-                button.Unchecked += (_, _) => SelectNote((string)button.Tag);
-                Identify(button, $"Note_{note.Swara.Key}");
-                rows.Children.Add(button);
+                var item = new ListViewItem { Tag = note.Swara.Key };
+                Identify(item, $"Note_{note.Swara.Key}");
+                rows.Items.Add(item);
             }
         }
         rowGrids.Clear();
         for (var i = 0; i < notes.Count; i++)
         {
             var note = notes[i];
-            var button = (ToggleButton)rows.Children[i];
-            button.IsChecked = state.Selected == note.Swara.Key;
-            button.Background = Brush(button.IsChecked == true ? ColorHelper.FromArgb(255, 52, 53, 39) : ColorHelper.FromArgb(255, 17, 29, 26));
-            button.BorderBrush = Brush(button.IsChecked == true ? Gold : Line);
-            AutomationProperties.SetName(button, $"{note.Swara.Name}, {note.Pitch}, {note.RelativeText}, {note.FrequencyText} Hz, {note.Fingering.Pattern}");
+            var item = (ListViewItem)rows.Items[i];
+            AutomationProperties.SetName(item, $"{note.Swara.Name}, {note.Pitch}, {note.RelativeText}, {note.FrequencyText} Hz, {note.Fingering.Pattern}");
             var row = new Grid { ColumnSpacing = 10, RowSpacing = 6 };
             row.Children.Add(Text(note.Swara.Token, 23, Gold, true));
             var name = new StackPanel { Spacing = 3 };
-            name.Children.Add(Text(note.Swara.Name, 12)); name.Children.Add(Text(note.Swara.Subtitle, 10, Muted));
+            name.Children.Add(Text(note.Swara.Name, 14)); name.Children.Add(Text(note.Swara.Subtitle, 12, Muted));
             row.Children.Add(name);
             var readout = new StackPanel { Spacing = 3 };
-            readout.Children.Add(Text(note.Pitch, 16)); readout.Children.Add(Text($"{note.RelativeText} \u00b7 {note.FrequencyText} Hz", 10, Muted));
+            readout.Children.Add(Text(note.Pitch, 18, Ink, true)); readout.Children.Add(Text($"{note.RelativeText} \u00b7 {note.FrequencyText} Hz", 12, Muted));
             row.Children.Add(readout);
             var mini = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
             foreach (var ch in note.Fingering.Pattern) mini.Children.Add(Hole(ch, 12));
             ToolTipService.SetToolTip(mini, string.Join(", ", note.Fingering.Pattern.Select((ch, h) => $"H{h + 1}: {HoleName(ch)}")));
             row.Children.Add(mini);
-            rowGrids.Add(row); LayoutRow(row); button.Content = row;
+            rowGrids.Add(row); LayoutRow(row); item.Content = row;
+            if (state.Selected == note.Swara.Key) rows.SelectedItem = item;
         }
     }
 
@@ -309,7 +333,7 @@ public sealed class MainWindow : Window
     private void SetAlternate()
     {
         if (updating) return;
-        state.Alternate = alternate.IsChecked == true;
+        state.Alternate = alternate.IsOn;
         Render();
     }
 
@@ -323,7 +347,7 @@ public sealed class MainWindow : Window
     private void Layout(double width)
     {
         compact = width <= 560;
-        headingTitle.FontSize = compact ? 36 : 46;
+        headingTitle.FontSize = compact ? 28 : 40;
         var settingColumns = width > 1000 ? 4 : width > 560 ? 2 : 1;
         ArrangeGrid(settings, settingColumns, 5);
         Grid.SetColumnSpan((FrameworkElement)settings.Children[4], settingColumns);
@@ -383,12 +407,12 @@ public sealed class MainWindow : Window
     private static StackPanel Field(string label, FrameworkElement input, string help, string id)
     {
         var field = new StackPanel { Spacing = 8 };
-        field.Children.Add(Text(label, 11, Muted));
+        field.Children.Add(Text(label, 14, Ink, true));
         input.HorizontalAlignment = HorizontalAlignment.Stretch;
-        input.MinHeight = 44;
+        input.MinHeight = 40;
         Identify(input, id, label);
         AutomationProperties.SetHelpText(input, help);
-        field.Children.Add(input); field.Children.Add(Text(help, 11, Muted));
+        field.Children.Add(input); field.Children.Add(Text(help, 12, Muted));
         return field;
     }
 
@@ -398,28 +422,24 @@ public sealed class MainWindow : Window
         content.Children.Add(Text(title, 11, Gold)); content.Children.Add(Text(body, 12, Muted));
         return Panel(content, 16);
     }
-    private static TextBlock Text(string text, double size, Color? color = null, bool serif = false) => new()
+    private static TextBlock Text(string text, double size, Color? color = null, bool heading = false) => new()
     {
+        Style = (Style)Application.Current.Resources[heading ? "BansuriHeadingTextStyle" : "BansuriBodyTextStyle"],
         Text = text,
         FontSize = size,
         Foreground = Brush(color ?? Ink),
-        TextWrapping = TextWrapping.Wrap,
-        FontFamily = new FontFamily(serif ? "Georgia" : "Segoe UI")
+        TextWrapping = TextWrapping.Wrap
     };
+    private static Color ThemeColor(string key) => (Color)Application.Current.Resources[key];
     private static SolidColorBrush Brush(Color color) => new(color);
-    private static Border Panel(UIElement content, double padding = 22) => new()
+    private static Border Panel(UIElement content, double padding = 20) => new()
     {
         Child = content,
         Padding = new Thickness(padding),
-        CornerRadius = new CornerRadius(18),
+        CornerRadius = new CornerRadius(12),
         BorderBrush = Brush(Line),
         BorderThickness = new Thickness(1),
-        Background = new LinearGradientBrush
-        {
-            StartPoint = new Point(0, 0),
-            EndPoint = new Point(1, 1),
-            GradientStops = { new GradientStop { Color = ColorHelper.FromArgb(255, 29, 45, 41), Offset = 0 }, new GradientStop { Color = ColorHelper.FromArgb(255, 22, 34, 31), Offset = 1 } }
-        }
+        Background = Brush(ThemeColor("BansuriSurfaceColor"))
     };
     private static string HoleName(char ch) => ch == 'X' ? "Closed" : ch == 'H' ? "Half" : "Open";
     private static Grid Hole(char ch, double size)

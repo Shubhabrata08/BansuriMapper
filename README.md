@@ -16,6 +16,10 @@ A native Windows WinUI 3 port of the supplied single-page app. The interface use
 WinUI controls and vector hole diagrams; no WebView, web server, or browser is
 required to run it. The original HTML is retained only as a test reference.
 
+Windows uses Fluent typography, a native single-selection swara list, and a
+native alternate-Pa toggle. The palette and common text/list styles live in
+`App.xaml`; the Android/iOS port uses a matching React Native Paper theme.
+
 ## Build and run
 
 Requires Windows 10 1809 or newer (x64), .NET 10 SDK, and NuGet access for the

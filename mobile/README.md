@@ -4,6 +4,12 @@ One React Native + Expo SDK 58 application for Android, iPhone, and iPad. These
 are native controls and vector hole diagrams, not a WebView. The web target is
 also available for previewing and testing the shared interface.
 
+The interface uses React Native Paper's Material 3 buttons, segmented controls,
+radio choices, switches, cards, and typography. `src\components\theme.ts` defines
+the green/gold theme shared visually with the Windows Fluent app. The selected
+swara diagrams remain custom vector views; calculation and state logic stay in
+the unchanged `src\domain\mapper.ts` module.
+
 ## Run
 
 Use a Node.js version supported by Expo SDK 58 and npm. From this directory:

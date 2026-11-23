@@ -1,12 +1,16 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render as renderComponent, screen } from '@testing-library/react-native';
+import type { ReactElement } from 'react';
 import { Linking } from 'react-native';
 import MapperScreen from '../src/screens/MapperScreen';
+import { AppThemeProvider } from '../src/components/AppThemeProvider';
 
 jest.mock('react-native-safe-area-context', () => jest.requireActual('react-native-safe-area-context/jest/mock').default);
 jest.setTimeout(60000);
 
+const render = (element: ReactElement) => renderComponent(<AppThemeProvider>{element}</AppThemeProvider>);
+
 async function choose(field: string, value: string) {
-  await fireEvent.press(screen.getByRole('button', { name: field }));
+  await fireEvent.press(screen.getByRole('button', { name: new RegExp(`^${field}, `) }));
   await fireEvent.press(screen.getByRole('radio', { name: value }));
 }
 
@@ -15,6 +19,7 @@ test('transposes independently, switches spelling, and resets through actual con
   expect(screen.getByTestId('selected-pitch')).toHaveTextContent('C4');
   expect(screen.getByTestId('fingering-code')).toHaveTextContent('XXXOOO');
   await choose('Reference bansuri \u00b7 Sa', 'E bansuri \u00b7 Sa sounds E');
+  expect(screen.getByRole('button', { name: 'Reference bansuri \u00b7 Sa, E bansuri \u00b7 Sa sounds E' })).toBeOnTheScreen();
   expect(screen.getByTestId('selected-swar')).toHaveTextContent('Sa');
   expect(screen.getByTestId('selected-pitch')).toHaveTextContent('E4');
   expect(screen.getByTestId('fingering-code')).toHaveTextContent('XOOOOO');
@@ -26,11 +31,11 @@ test('transposes independently, switches spelling, and resets through actual con
   await fireEvent.press(screen.getByRole('button', { name: 'Reset to C Bhairav' }));
   await fireEvent.press(screen.getByTestId('note-r'));
   expect(screen.getByTestId('selected-pitch')).toHaveTextContent('C#4');
-  await fireEvent.press(screen.getByRole('radio', { name: 'Flats' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Flats' }));
   expect(screen.getByTestId('selected-pitch')).toHaveTextContent('Db4');
   await fireEvent.press(screen.getByRole('button', { name: 'Reset to C Bhairav' }));
   expect(screen.getByTestId('selected-pitch')).toHaveTextContent('C4');
-  expect(screen.getByRole('radio', { name: 'Sharps' })).toBeChecked();
+  expect(screen.getByRole('button', { name: 'Sharps' }).props.accessibilityState.checked).toBe(true);
 });
 
 test('alternate Pa updates both detail and row and clears when the thaat changes', async () => {
@@ -52,7 +57,7 @@ test('alternate Pa updates both detail and row and clears when the thaat changes
 
 test('closing a choice dialog does not change settings', async () => {
   await render(<MapperScreen />);
-  await fireEvent.press(screen.getByRole('button', { name: 'Thaat' }));
+  await fireEvent.press(screen.getByRole('button', { name: /^Thaat, / }));
   await fireEvent.press(screen.getByRole('button', { name: 'Close Thaat' }));
   expect(screen.getByTestId('summary')).toHaveTextContent('Bhairav / C reference \u00b7 C flute');
   expect(screen.queryByRole('radio', { name: 'Marwa' })).toBeNull();

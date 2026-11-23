@@ -6,7 +6,32 @@
       <ResourceDictionary.MergedDictionaries>
         <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
       </ResourceDictionary.MergedDictionaries>
-      <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="#343527" />
+      <Color x:Key="BansuriBackgroundColor">#101918</Color>
+      <Color x:Key="BansuriSurfaceColor">#182522</Color>
+      <Color x:Key="BansuriSurfaceVariantColor">#223630</Color>
+      <Color x:Key="BansuriInkColor">#F0F3E9</Color>
+      <Color x:Key="BansuriMutedColor">#A7B6AA</Color>
+      <Color x:Key="BansuriGoldColor">#D4B477</Color>
+      <Color x:Key="BansuriMintColor">#9BC8A8</Color>
+      <Color x:Key="BansuriOutlineColor">#40544A</Color>
+      <SolidColorBrush x:Key="BansuriInkBrush" Color="{StaticResource BansuriInkColor}" />
+      <SolidColorBrush x:Key="BansuriGoldBrush" Color="{StaticResource BansuriGoldColor}" />
+      <Color x:Key="SystemAccentColor">#D4B477</Color>
+      <Color x:Key="SystemAccentColorLight1">#DCC38E</Color>
+      <Color x:Key="SystemAccentColorLight2">#E5D2A9</Color>
+      <Color x:Key="SystemAccentColorLight3">#EEE2C7</Color>
+      <Color x:Key="SystemAccentColorDark1">#BF9A5F</Color>
+      <Color x:Key="SystemAccentColorDark2">#A88752</Color>
+      <Color x:Key="SystemAccentColorDark3">#8B6E43</Color>
+      <Style x:Key="BansuriBodyTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
+        <Setter Property="Foreground" Value="{StaticResource BansuriInkBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+      </Style>
+      <Style x:Key="BansuriHeadingTextStyle" TargetType="TextBlock" BasedOn="{StaticResource SubtitleTextBlockStyle}">
+        <Setter Property="Foreground" Value="{StaticResource BansuriInkBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+      </Style>
+      <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="#31483E" />
       <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="#454732" />
       <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="#3A402C" />
       <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="#F0F3E9" />
@@ -18,6 +43,17 @@
       <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="#D4B477" />
       <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="#E5BD72" />
       <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed" Color="#D4B477" />
+      <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#343527" />
+      <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#454732" />
+      <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="#3A402C" />
+      <SolidColorBrush x:Key="ListViewItemSelectionIndicatorBrush" Color="{StaticResource BansuriGoldColor}" />
+      <Style x:Key="BansuriNoteItemStyle" TargetType="ListViewItem">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="MinHeight" Value="72" />
+      </Style>
     </ResourceDictionary>
   </Application.Resources>
 </Application>
