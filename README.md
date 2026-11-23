@@ -1,5 +1,17 @@
 # Bansuri Fingering Mapper
 
+## Android and iOS
+
+The `mobile` folder contains the React Native + Expo port for Android phones,
+iPhone, and tablets, plus a web preview. See `mobile\README.md` for setup,
+platform builds, and tests. The WinUI project below remains independent.
+
+```powershell
+cd mobile
+npm ci
+npm start
+```
+
 A native Windows WinUI 3 port of the supplied single-page app. The interface uses
 WinUI controls and vector hole diagrams; no WebView, web server, or browser is
 required to run it. The original HTML is retained only as a test reference.

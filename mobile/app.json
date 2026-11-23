@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Bansuri Fingering Mapper",
+    "slug": "bansuri-fingering-mapper",
+    "scheme": "bansuri-mapper",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#101918",
+    "plugins": ["expo-router"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bansurimapper.mobile",
+      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
+    },
+    "android": {
+      "package": "com.bansurimapper.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#101918",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
