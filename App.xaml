@@ -1,0 +1,23 @@
+<Application x:Class="BansuriMapper.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+      </ResourceDictionary.MergedDictionaries>
+      <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="#343527" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="#454732" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="#3A402C" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="#F0F3E9" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="#F0F3E9" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="#F0F3E9" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="#D4B477" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="#D4B477" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="#D4B477" />
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="#D4B477" />
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="#E5BD72" />
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed" Color="#D4B477" />
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

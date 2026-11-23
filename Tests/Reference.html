@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101a19">
+<title>Bansuri Fingering Mapper</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #101918;
+    --panel: #182522;
+    --panel-2: #1d2d29;
+    --line: #31423c;
+    --ink: #f0f3e9;
+    --muted: #a7b6aa;
+    --muted-2: #82948a;
+    --accent: #d4b477;
+    --accent-soft: rgba(212,180,119,.14);
+    --mint: #9bc8a8;
+    --half: #e5bd72;
+    --open: #6b7f75;
+    --danger: #e2a08a;
+    --shadow: 0 18px 50px rgba(0,0,0,.22);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 18% -8%, rgba(90,132,105,.18), transparent 38%), var(--bg);
+    color: var(--ink);
+  }
+  button, select { font: inherit; }
+  .shell { width: min(1120px, calc(100% - 36px)); margin: 0 auto; padding: 38px 0 54px; }
+  .topline { display:flex; align-items:center; gap:10px; color:var(--accent); font-size:11px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; }
+  .topline .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 14px rgba(212,180,119,.6); }
+  h1 { margin:13px 0 8px; font-family: Georgia, "Times New Roman", serif; font-size:clamp(36px, 5vw, 54px); line-height:1.03; font-weight:500; letter-spacing:-.035em; }
+  .lede { max-width:720px; color:var(--muted); line-height:1.65; margin:0; font-size:15px; }
+  .controls { margin-top:28px; padding:20px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)) auto; gap:16px; align-items:end; background:linear-gradient(135deg, rgba(29,45,41,.96), rgba(24,37,34,.96)); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); }
+  .field label { display:block; margin:0 0 8px; color:var(--muted); font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+  select { width:100%; min-height:46px; padding:0 42px 0 14px; color:var(--ink); background:#111d1a; border:1px solid #40544a; border-radius:10px; outline:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a7b6aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; }
+  select:focus-visible, button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .key-note { color:var(--muted-2); font-size:11px; line-height:1.45; margin-top:7px; }
+  .notation-toggle { display:grid; grid-template-columns:1fr 1fr; gap:5px; min-height:46px; padding:4px; border:1px solid #40544a; border-radius:10px; background:#111d1a; }
+  .notation-toggle button { border:0; border-radius:7px; background:transparent; color:var(--muted); font-size:12px; font-weight:700; cursor:pointer; padding:0 8px; transition:.18s ease; }
+  .notation-toggle button[aria-pressed="true"] { color:var(--ink); background:#31483e; box-shadow:inset 0 0 0 1px #5c7866; }
+  .notation-toggle button:hover { color:var(--ink); }
+  .reset-btn { min-height:46px; border:1px solid #53665a; border-radius:10px; background:transparent; color:var(--muted); padding:0 16px; cursor:pointer; transition:.18s ease; }
+  .reset-btn:hover { border-color:var(--accent); color:var(--ink); background:var(--accent-soft); }
+  .summary { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin:26px 2px 14px; }
+  .summary h2 { font-family:Georgia, "Times New Roman", serif; font-size:27px; font-weight:500; margin:0; }
+  .summary h2 span { color:var(--accent); }
+  .pills { display:flex; flex-wrap:wrap; gap:8px; }
+  .pill { border:1px solid #40534a; background:rgba(29,45,41,.7); padding:7px 10px; border-radius:999px; color:var(--muted); font-size:11px; font-weight:650; }
+  .sequence { display:flex; flex-wrap:wrap; align-items:center; gap:7px; padding:14px 16px; margin-bottom:20px; border:1px solid #35483f; border-radius:14px; background:rgba(24,37,34,.72); }
+  .sequence .seq-label { color:var(--muted-2); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.12em; margin-right:6px; }
+  .seq-note { color:var(--ink); font-family:Georgia,serif; font-size:17px; white-space:nowrap; }
+  .seq-note .western { color:var(--accent); font-family:inherit; }
+  .arrow { color:#65776d; font-size:12px; }
+  .workspace { display:grid; grid-template-columns:minmax(280px, .82fr) minmax(0, 1.5fr); gap:18px; align-items:start; }
+  .detail, .table-panel { border:1px solid var(--line); border-radius:18px; background:linear-gradient(160deg, rgba(29,45,41,.94), rgba(22,34,31,.96)); box-shadow:var(--shadow); }
+  .detail { padding:22px; position:sticky; top:16px; }
+  .eyebrow { color:var(--muted-2); font-size:10px; letter-spacing:.15em; text-transform:uppercase; font-weight:800; }
+  .selected-head { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-top:7px; }
+  .selected-swar { font-family:Georgia,serif; font-size:48px; line-height:1; color:var(--accent); }
+  .selected-pitch { text-align:right; }
+  .selected-pitch strong { display:block; font-size:24px; font-weight:650; }
+  .selected-pitch small { display:block; color:var(--muted); font-size:11px; margin-top:3px; }
+  .selected-pitch .relative-readout { color:var(--accent); font-size:10px; line-height:1.4; max-width:185px; }
+  .detail-divider { height:1px; background:var(--line); margin:18px 0; }
+  .flute-label { display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:12px; margin-bottom:12px; }
+  .flute-label b { color:var(--ink); font-weight:650; }
+  .hole-diagram { position:relative; background:linear-gradient(180deg,#223630,#192823); border:1px solid #3b5348; border-radius:14px; padding:16px 10px 12px; overflow:hidden; }
+  .hole-diagram:before { content:""; position:absolute; top:0; bottom:0; left:0; width:5px; background:linear-gradient(180deg,#a68e5f,#4c5e50); opacity:.75; }
+  .hole-row { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; text-align:center; position:relative; z-index:1; }
+  .hole { display:flex; flex-direction:column; align-items:center; gap:7px; min-width:0; }
+  .hole .circle { width:34px; height:34px; border-radius:50%; border:2px solid #71857a; display:grid; place-items:center; color:#15201c; font-size:10px; font-weight:900; box-shadow:inset 0 1px 2px rgba(0,0,0,.3); }
+  .circle.closed { background:var(--mint); border-color:var(--mint); }
+  .circle.open { background:transparent; color:transparent; border-color:#7c9185; }
+  .circle.half { background:linear-gradient(90deg,var(--half) 50%, transparent 50%); border-color:var(--half); }
+  .hole .hname { font-size:10px; color:var(--muted); font-weight:750; }
+  .state-label { font-size:9px; color:var(--muted-2); text-transform:uppercase; letter-spacing:.04em; }
+  .legend { display:flex; gap:13px; flex-wrap:wrap; margin-top:12px; color:var(--muted); font-size:10px; }
+  .legend span { display:flex; align-items:center; gap:6px; }
+  .legend i { width:10px; height:10px; display:inline-block; border-radius:50%; border:1px solid #8a9c91; }
+  .legend .l-closed { background:var(--mint); border-color:var(--mint); }
+  .legend .l-half { background:linear-gradient(90deg,var(--half) 50%,transparent 50%); border-color:var(--half); }
+  .technique { margin-top:17px; border-radius:12px; padding:13px 14px; background:rgba(212,180,119,.09); border:1px solid rgba(212,180,119,.24); }
+  .technique strong { display:block; color:var(--accent); font-size:11px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:5px; }
+  .technique p { margin:0; color:#c4d0c5; font-size:12px; line-height:1.55; }
+  .fingering-code { margin-top:15px; display:flex; justify-content:space-between; align-items:center; gap:12px; color:var(--muted); font-size:11px; }
+  .fingering-code code { color:var(--ink); font-size:13px; letter-spacing:.16em; background:#101b18; padding:7px 9px; border-radius:7px; border:1px solid #34483e; }
+  .pa-toggle { display:flex; align-items:flex-start; gap:9px; margin-top:14px; color:var(--muted); font-size:11px; line-height:1.45; cursor:pointer; }
+  .pa-toggle input { accent-color:var(--accent); margin-top:2px; }
+  .table-panel { padding:18px; }
+  .table-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 2px 12px; }
+  .table-head h3 { margin:0; font-family:Georgia,serif; font-size:21px; font-weight:500; }
+  .table-head span { color:var(--muted-2); font-size:10px; }
+  .note-list { display:grid; gap:8px; }
+  .note-card { width:100%; display:grid; grid-template-columns:52px minmax(78px,.75fr) minmax(120px,1fr) 116px; gap:10px; align-items:center; text-align:left; padding:11px 12px; border-radius:12px; border:1px solid #35483f; background:rgba(16,26,24,.55); color:var(--ink); cursor:pointer; transition:background .16s ease,border .16s ease,transform .16s ease; }
+  .note-card:hover { background:#22352e; border-color:#69816f; transform:translateY(-1px); }
+  .note-card[aria-pressed="true"] { background:var(--accent-soft); border-color:var(--accent); box-shadow:inset 3px 0 0 var(--accent); }
+  .swar-token { color:var(--accent); font-family:Georgia,serif; font-size:23px; }
+  .swar-name { font-size:12px; color:#dce5d9; }
+  .swar-name small { display:block; margin-top:2px; color:var(--muted-2); font-size:10px; }
+  .pitch-name { font-size:16px; font-weight:700; }
+  .pitch-name small { display:block; color:var(--muted-2); font-size:10px; font-weight:500; margin-top:2px; }
+  .mini-holes { display:flex; justify-content:flex-end; gap:4px; }
+  .mini-hole { width:12px; height:12px; border-radius:50%; border:1.3px solid #80948a; }
+  .mini-hole.closed { background:var(--mint); border-color:var(--mint); }
+  .mini-hole.half { background:linear-gradient(90deg,var(--half) 50%,transparent 50%); border-color:var(--half); }
+  .mini-hole.open { background:transparent; }
+  .table-foot { margin:13px 3px 0; color:var(--muted-2); font-size:10px; line-height:1.55; }
+  .info-strip { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px; }
+  .info-card { border:1px solid var(--line); background:rgba(24,37,34,.64); border-radius:13px; padding:14px 16px; }
+  .info-card strong { display:block; color:var(--accent); font-size:11px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; }
+  .info-card p { margin:0; color:var(--muted); font-size:11px; line-height:1.55; }
+  .footer { margin-top:23px; padding-top:16px; border-top:1px solid #2b3b35; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; color:var(--muted-2); font-size:10px; line-height:1.6; }
+  .footer a { color:#c8b27e; text-decoration:none; }
+  .footer a:hover { text-decoration:underline; }
+  @media (max-width:820px) {
+    .controls { grid-template-columns:1fr 1fr; }
+    .reset-btn { grid-column:1/-1; }
+    .workspace { grid-template-columns:1fr; }
+    .detail { position:static; }
+  }
+  @media (max-width:560px) {
+    .shell { width:min(100% - 24px,1120px); padding-top:26px; }
+    .controls { grid-template-columns:1fr; padding:15px; }
+    .reset-btn { grid-column:auto; }
+    .summary { align-items:flex-start; flex-direction:column; }
+    .note-card { grid-template-columns:42px minmax(68px,.7fr) minmax(82px,1fr); }
+    .mini-holes { grid-column:2/-1; justify-content:flex-start; margin-top:1px; }
+    .hole .circle { width:29px; height:29px; }
+    .info-strip { grid-template-columns:1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition:none !important; scroll-behavior:auto !important; } }
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="topline"><span class="dot"></span> Hindustani flute toolkit</div>
+  <h1>Bansuri Fingering Mapper</h1>
+  <p class="lede">Choose a thaat, set the bansuri that defines your reference Sa, then choose the flute you are mapping. The Hindustani swaras stay relative to Sa (Sa, Re, Ga…), while the app independently calculates the hole combinations needed on the flute in your hands.</p>
+
+  <section class="controls" aria-label="Scale and flute settings">
+    <div class="field">
+      <label for="thaatSelect">Thaat</label>
+      <select id="thaatSelect">
+        <option value="Bhairav" selected>Bhairav</option>
+        <option value="Bilawal">Bilawal</option>
+        <option value="Khamaj">Khamaj</option>
+        <option value="Kafi">Kafi</option>
+        <option value="Asavari">Asavari</option>
+        <option value="Bhairavi">Bhairavi</option>
+        <option value="Kalyan">Kalyan</option>
+        <option value="Marwa">Marwa</option>
+        <option value="Poorvi">Poorvi</option>
+        <option value="Todi">Todi</option>
+      </select>
+      <div class="key-note">Select one of the ten commonly taught Hindustani thaats.</div>
+    </div>
+    <div class="field">
+      <label for="referenceSelect">Reference bansuri · Sa</label>
+      <select id="referenceSelect">
+        <option value="C" selected>C bansuri · Sa sounds C</option>
+        <option value="C#">C♯ bansuri · Sa sounds C♯</option>
+        <option value="D">D bansuri · Sa sounds D</option>
+        <option value="Eb">E♭ bansuri · Sa sounds E♭</option>
+        <option value="E">E bansuri · Sa sounds E</option>
+        <option value="F">F bansuri · Sa sounds F</option>
+        <option value="F#">F♯ bansuri · Sa sounds F♯</option>
+        <option value="G">G bansuri · Sa sounds G</option>
+        <option value="Ab">A♭ bansuri · Sa sounds A♭</option>
+        <option value="A">A bansuri · Sa sounds A</option>
+        <option value="Bb">B♭ bansuri · Sa sounds B♭</option>
+        <option value="B">B bansuri · Sa sounds B</option>
+      </select>
+      <div class="key-note">Holes 1–3 closed are always called Sa. This setting defines Sa’s actual pitch.</div>
+    </div>
+    <div class="field">
+      <label for="fluteSelect">Flute being mapped</label>
+      <select id="fluteSelect">
+        <option value="C" selected>C bansuri · Sa sounds C</option>
+        <option value="C#">C♯ bansuri · Sa sounds C♯</option>
+        <option value="D">D bansuri · Sa sounds D</option>
+        <option value="Eb">E♭ bansuri · Sa sounds E♭</option>
+        <option value="E">E bansuri · Sa sounds E</option>
+        <option value="F">F bansuri · Sa sounds F</option>
+        <option value="F#">F♯ bansuri · Sa sounds F♯</option>
+        <option value="G">G bansuri · Sa sounds G</option>
+        <option value="Ab">A♭ bansuri · Sa sounds A♭</option>
+        <option value="A">A bansuri · Sa sounds A</option>
+        <option value="Bb">B♭ bansuri · Sa sounds B♭</option>
+        <option value="B">B bansuri · Sa sounds B</option>
+      </select>
+      <div class="key-note">Choose the instrument you will play. The app calculates its hole pattern for each reference swara.</div>
+    </div>
+    <div class="field">
+      <label>Western note spelling</label>
+      <div class="notation-toggle" role="group" aria-label="Western note spelling">
+        <button type="button" id="sharpModeBtn" aria-pressed="true">Sharps (#)</button>
+        <button type="button" id="flatModeBtn" aria-pressed="false">Flats (♭)</button>
+      </div>
+      <div class="key-note">Choose one accidental style for all Western pitch names and flute keys.</div>
+    </div>
+    <button class="reset-btn" id="resetBtn" type="button">Reset to C · Bhairav</button>
+  </section>
+
+  <section class="summary" aria-live="polite">
+    <h2><span id="summaryThaat">Bhairav</span> <span style="color:var(--muted-2)">/</span> <span id="summaryFlute">C bansuri</span></h2>
+    <div class="pills">
+      <span class="pill" id="referencePill">Reference bansuri Sa = C</span>
+      <span class="pill" id="flutePill">Mapped flute = C</span>
+      <span class="pill" id="notationPill">Notation = Sharps (#)</span>
+      <span class="pill">Sa = H1–H3 closed</span>
+    </div>
+  </section>
+  <div class="sequence" id="sequence" aria-label="Ascending scale notes"></div>
+
+  <section class="workspace">
+    <aside class="detail" aria-label="Selected swara fingering">
+      <div class="eyebrow">Selected swara · Fingering detail</div>
+      <div class="selected-head">
+        <div class="selected-swar" id="selectedSwar">Sa</div>
+        <div class="selected-pitch"><strong id="selectedPitch">C4</strong><small id="selectedPitchSub">261.6 Hz · target pitch</small><small class="relative-readout" id="selectedRelative">Same as flute Sa</small></div>
+      </div>
+      <div class="detail-divider"></div>
+      <div class="flute-label"><span>Required hole positions</span><b>Blowing end → lower end</b></div>
+      <div class="hole-diagram">
+        <div class="hole-row" id="largeHoles"></div>
+      </div>
+      <div class="legend">
+        <span><i class="l-closed"></i> Closed</span>
+        <span><i class="l-half"></i> Half-covered</span>
+        <span><i></i> Open</span>
+      </div>
+      <div class="technique">
+        <strong id="techniqueTitle">Tonic · normal breath</strong>
+        <p id="techniqueText">Close holes 1, 2 and 3. Keep holes 4, 5 and 6 open. This is the Sa reference for the selected flute key.</p>
+      </div>
+      <div class="fingering-code"><span>Fingering code · X closed / H half / O open</span><code id="fingeringCode">XXXOOO</code></div>
+      <label class="pa-toggle" id="paToggleWrap" hidden><input type="checkbox" id="altPa"> Use alternate Pa fingering (H1 open, H2–H6 closed)</label>
+    </aside>
+
+    <section class="table-panel" aria-label="Thaat note map">
+      <div class="table-head"><h3>Swara map</h3><span>Sa-relative swaras · flute-specific holes</span></div>
+      <div class="note-list" id="noteList"></div>
+      <p class="table-foot">The six dots in each row are holes 1–6, from nearest the blowing end to furthest away. Swara identity comes from the selected reference bansuri’s Sa and the chosen thaat. The Western pitch is a separate sounding-pitch readout; it does not rename the swara.</p>
+    </section>
+  </section>
+
+  <section class="info-strip">
+    <div class="info-card"><strong>Reference Sa vs. mapped flute</strong><p>The reference bansuri defines the real-world pitch of Sa. For example, choosing an E reference bansuri means H1–H3 closed is called Sa and sounds E. If the flute being mapped is C, the app finds the C-flute fingering that reproduces that same E pitch, while keeping the swara label as Sa.</p></div>
+    <div class="info-card"><strong>Practical tuning note</strong><p>Six-hole fingering charts are reference patterns. Half-hole size, cross-fingerings, breath pressure and octave response vary between bamboo flutes and teachers. Tune each note against your chosen Sa drone; use the diagram as a starting point.</p></div>
+  </section>
+
+  <footer class="footer">
+    <span>Six-hole reference: Sa on H1–H3 · Hole 1 is nearest the blowing end. Swaras are relative to the selected reference bansuri.</span>
+    <span>Fingering reference: <a href="https://bikashacharya.com/sangeet-yatra/basuri/swaras.html" target="_blank" rel="noopener">Six-hole bansuri swara chart</a> · <a href="https://www.anubodh.com/fingering-charts.php" target="_blank" rel="noopener">Interactive fingering chart</a></span>
+  </footer>
+</main>
+<script>
+(() => {
+  'use strict';
+
+  // Thaats are stored as semitone intervals from Sa, not as C-based note names.
+  // The reference bansuri defines Sa's real pitch; the mapped flute defines the
+  // hole combination needed to reproduce each swara.
+  const thaats = {
+    Bhairav:  ['S','r','G','M','P','d','N',"S'"],
+    Bilawal:  ['S','R','G','M','P','D','N',"S'"],
+    Khamaj:   ['S','R','G','M','P','D','n',"S'"],
+    Kafi:     ['S','R','g','M','P','D','n',"S'"],
+    Asavari:  ['S','R','g','M','P','d','n',"S'"],
+    Bhairavi: ['S','r','g','M','P','d','n',"S'"],
+    Kalyan:   ['S','R','G','M#','P','D','N',"S'"],
+    Marwa:    ['S','r','G','M#','D','N',"S'"],
+    Poorvi:   ['S','r','G','M#','P','d','N',"S'"],
+    Todi:     ['S','r','g','M#','P','d','N',"S'"]
+  };
+
+  const swaras = {
+    'S':  {name:'Sa', label:'Shadja', interval:0, degree:0, sub:'Tonic'},
+    'r':  {name:'Komal Re', label:'Komal Rishabh', interval:1, degree:1, sub:'Flattened second'},
+    'R':  {name:'Shuddha Re', label:'Shuddha Rishabh', interval:2, degree:1, sub:'Major second'},
+    'g':  {name:'Komal Ga', label:'Komal Gandhar', interval:3, degree:2, sub:'Flattened third'},
+    'G':  {name:'Shuddha Ga', label:'Shuddha Gandhar', interval:4, degree:2, sub:'Major third'},
+    'M':  {name:'Shuddha Ma', label:'Shuddha Madhyam', interval:5, degree:3, sub:'Perfect fourth'},
+    'M#': {name:'Tivra Ma', label:'Tivra Madhyam', interval:6, degree:3, sub:'Raised fourth'},
+    'P':  {name:'Pa', label:'Pancham', interval:7, degree:4, sub:'Perfect fifth'},
+    'd':  {name:'Komal Dha', label:'Komal Dhaivat', interval:8, degree:5, sub:'Flattened sixth'},
+    'D':  {name:'Shuddha Dha', label:'Shuddha Dhaivat', interval:9, degree:5, sub:'Major sixth'},
+    'n':  {name:'Komal Ni', label:'Komal Nishad', interval:10, degree:6, sub:'Flattened seventh'},
+    'N':  {name:'Shuddha Ni', label:'Shuddha Nishad', interval:11, degree:6, sub:'Major seventh'},
+    "S'": {name:'Taar Sa', label:'Upper Shadja', interval:12, degree:7, sub:'Upper tonic'}
+  };
+
+  // Pitch class of the selected reference or mapped flute Sa.
+  const roots = {
+    C:  {pc:0}, 'C#':{pc:1}, D:{pc:2}, Eb:{pc:3}, E:{pc:4}, F:{pc:5},
+    'F#':{pc:6}, G:{pc:7}, Ab:{pc:8}, A:{pc:9}, Bb:{pc:10}, B:{pc:11}
+  };
+
+  // Chromatic reference fingering, relative to the selected flute's Sa.
+  // The lower-register notes (-5 through -1) reuse Pa–Ni shapes below Sa.
+  const chromatic = [
+    {name:'Sa',          pattern:'XXXOOO', breath:'Normal breath',          hint:'Close H1, H2 and H3. Leave H4–H6 open. This is the selected flute’s Sa reference.'},
+    {name:'Komal Re',    pattern:'XXHOOO', breath:'Gentle half-hole',       hint:'Close H1 and H2; half-cover H3 to produce the semitone above Sa.'},
+    {name:'Shuddha Re',  pattern:'XXOOOO', breath:'Normal breath',          hint:'Close H1 and H2; leave H3–H6 open.'},
+    {name:'Komal Ga',    pattern:'XHOOOO', breath:'Gentle half-hole',       hint:'Close H1 and half-cover H2. Fine-tune against the Sa drone.'},
+    {name:'Shuddha Ga',  pattern:'XOOOOO', breath:'Normal breath',          hint:'Close H1; leave H2–H6 open.'},
+    {name:'Shuddha Ma',  pattern:'HOOOOO', breath:'Gentle half-hole',       hint:'Half-cover H1 and leave H2–H6 open. Roll the finger to tune the note.'},
+    {name:'Tivra Ma',    pattern:'OOOOOO', breath:'Normal breath',          hint:'Lift all six fingers. An alternate cross-fingering may speak more cleanly on some flutes.'},
+    {name:'Pa',          pattern:'XXXXXX', breath:'Focused · upper register', hint:'Close all six holes and use a faster, narrower air stream for madhya Pa. An alternate fingering is H1 open and H2–H6 closed.'},
+    {name:'Komal Dha',   pattern:'XXXXXH', breath:'Focused · upper register', hint:'Close H1–H5 and half-cover H6. Use focused air and tune against the drone.'},
+    {name:'Shuddha Dha', pattern:'XXXXXO', breath:'Focused · upper register', hint:'Close H1–H5 and leave H6 open. Use focused air.'},
+    {name:'Komal Ni',    pattern:'XXXXHO', breath:'Focused · upper register', hint:'Close H1–H4, half-cover H5 and leave H6 open.'},
+    {name:'Shuddha Ni',  pattern:'XXXXOO', breath:'Focused · upper register', hint:'Close H1–H4 and leave H5–H6 open.'}
+  ];
+
+  const letterNames = ['C','D','E','F','G','A','B'];
+  const naturalOffsets = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+  const accidentalNames = {'-2':'𝄫','-1':'♭','0':'','1':'♯','2':'𝄪'};
+  const el = id => document.getElementById(id);
+  let selectedKey = 'S';
+
+  function modulo12(n) { return ((n % 12) + 12) % 12; }
+
+  // Keep each flute tonic in the octave nearest C4 for a consistent register map.
+  // At the tritone, choose F# below C.
+  function fluteOffsetFromC(rootName) {
+    const pc = roots[rootName].pc;
+    return pc >= 6 ? pc - 12 : pc;
+  }
+
+  function getRelativeInterval(swara, referenceRoot, mappedRoot) {
+    const referenceSa = fluteOffsetFromC(referenceRoot);
+    const mappedSa = fluteOffsetFromC(mappedRoot);
+    return referenceSa + swara.interval - mappedSa;
+  }
+
+  const sharpPitchClassNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const flatPitchClassNames = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+  let notationMode = 'sharps';
+  function noteNameForPitchClass(pitchClass) {
+    const names = notationMode === 'flats' ? flatPitchClassNames : sharpPitchClassNames;
+    return names[modulo12(pitchClass)];
+  }
+  function formatRoot(rootName) {
+    return noteNameForPitchClass(roots[rootName].pc);
+  }
+  function getPitch(swara, referenceRoot) {
+    // Concert pitch is calculated independently from the Hindustani swara label.
+    const targetMidi = 60 + fluteOffsetFromC(referenceRoot) + swara.interval;
+    const pitchClass = modulo12(targetMidi);
+    const octave = Math.floor(targetMidi / 12) - 1;
+    const note = `${noteNameForPitchClass(pitchClass)}${octave}`;
+    const frequency = 440 * Math.pow(2, (targetMidi - 69) / 12);
+    return {note, frequency, midi:targetMidi};
+  }
+
+  function getFingerSpec(relativeInterval, altPa = false) {
+    const index = modulo12(relativeInterval);
+    const base = chromatic[index];
+    const useAltPa = altPa && index === 7 && relativeInterval >= 7;
+    return {
+      ...base,
+      pattern: useAltPa ? 'OXXXXX' : base.pattern,
+      alternate: useAltPa
+    };
+  }
+
+  function getRegister(relativeInterval) {
+    if (relativeInterval < 0) return 'Mandra · lower register';
+    if (relativeInterval <= 6) return 'Madhya · normal register';
+    if (relativeInterval <= 11) return 'Madhya · upper register';
+    if (relativeInterval <= 18) return 'Taar · upper octave';
+    return 'Ati-taar · higher octave';
+  }
+
+  function relativeDescription(relativeInterval) {
+    const index = modulo12(relativeInterval);
+    const swarName = chromatic[index].name;
+    if (relativeInterval === 0) return 'Same as this flute’s Sa';
+    const amount = Math.abs(relativeInterval);
+    const unit = amount === 1 ? 'semitone' : 'semitones';
+    const direction = relativeInterval < 0 ? 'below' : 'above';
+    const octave = relativeInterval < 0 ? ' · Mandra' : relativeInterval >= 12 ? ' · Taar' : '';
+    return `${amount} ${unit} ${direction} flute Sa · ${swarName}${octave}`;
+  }
+
+  function holeState(ch) {
+    return ch === 'X' ? 'closed' : ch === 'H' ? 'half' : 'open';
+  }
+  function readableState(ch) {
+    return ch === 'X' ? 'Closed' : ch === 'H' ? 'Half' : 'Open';
+  }
+  function displaySwar(key) {
+    return key === 'S' ? 'Sa' : key === "S'" ? 'Sa′' : key === 'M#' ? 'M♯' : key;
+  }
+  function updateRootOptionLabels() {
+    ['referenceSelect', 'fluteSelect'].forEach(id => {
+      [...el(id).options].forEach(option => {
+        const name = formatRoot(option.value);
+        option.textContent = `${name} bansuri · Sa sounds ${name}`;
+      });
+    });
+  }
+  function updateNotationButtons() {
+    const sharps = notationMode === 'sharps';
+    el('sharpModeBtn').setAttribute('aria-pressed', String(sharps));
+    el('flatModeBtn').setAttribute('aria-pressed', String(!sharps));
+  }
+
+  function renderLargeHoles(pattern) {
+    el('largeHoles').innerHTML = [...pattern].map((ch, i) => {
+      const state = holeState(ch);
+      const label = ch === 'X' ? 'X' : ch === 'H' ? '½' : '';
+      return `<div class="hole"><div class="circle ${state}" aria-label="Hole ${i+1}: ${readableState(ch)}">${label}</div><span class="hname">H${i+1}</span><span class="state-label">${readableState(ch)}</span></div>`;
+    }).join('');
+  }
+  function renderMiniHoles(pattern) {
+    return `<div class="mini-holes" aria-label="${pattern.split('').map((c,i)=>`hole ${i+1} ${readableState(c)}`).join(', ')}">${[...pattern].map(ch=>`<span class="mini-hole ${holeState(ch)}"></span>`).join('')}</div>`;
+  }
+  function renderSequence(keys, referenceRoot) {
+    const fragments = keys.map((key, i) => {
+      const pitch = getPitch(swaras[key], referenceRoot);
+      const token = displaySwar(key);
+      return `${i ? '<span class="arrow">→</span>' : ''}<span class="seq-note">${token} <span class="western">${pitch.note}</span></span>`;
+    });
+    el('sequence').innerHTML = `<span class="seq-label">Sargam · pitch readout for ${formatRoot(referenceRoot)} reference</span>${fragments.join('')}`;
+  }
+  function renderRows(keys, referenceRoot, mappedRoot) {
+    el('noteList').innerHTML = keys.map(key => {
+      const swara = swaras[key];
+      const pitch = getPitch(swara, referenceRoot);
+      const relative = getRelativeInterval(swara, referenceRoot, mappedRoot);
+      const pattern = getFingerSpec(relative, el('altPa').checked).pattern;
+      const token = displaySwar(key);
+      const selected = key === selectedKey;
+      return `<button type="button" class="note-card" data-note="${key}" aria-pressed="${selected}">
+        <span class="swar-token">${token}</span>
+        <span class="swar-name">${swara.name}<small>${swara.sub}</small></span>
+        <span class="pitch-name">${pitch.note}<small>${relativeDescription(relative)} · ${pitch.frequency.toFixed(1)} Hz</small></span>
+        ${renderMiniHoles(pattern)}
+      </button>`;
+    }).join('');
+    el('noteList').querySelectorAll('[data-note]').forEach(button => {
+      button.addEventListener('click', () => { selectedKey = button.dataset.note; render(); });
+    });
+  }
+  function renderDetail(referenceRoot, mappedRoot) {
+    const swara = swaras[selectedKey];
+    const pitch = getPitch(swara, referenceRoot);
+    const relative = getRelativeInterval(swara, referenceRoot, mappedRoot);
+    const spec = getFingerSpec(relative, el('altPa').checked);
+    const token = displaySwar(selectedKey);
+    el('selectedSwar').textContent = token;
+    el('selectedPitch').textContent = pitch.note;
+    el('selectedPitchSub').textContent = `${pitch.frequency.toFixed(1)} Hz · sounding pitch`;
+    el('selectedRelative').textContent = relativeDescription(relative);
+    renderLargeHoles(spec.pattern);
+    el('fingeringCode').textContent = spec.pattern;
+    el('techniqueTitle').textContent = `${spec.name} · ${getRegister(relative)}`;
+    let registerHint = '';
+    if (relative < 0) {
+      registerHint = ' This note is below the flute’s Sa, so use the lower-register, gentler air stream.';
+    } else if (relative >= 12 && relative <= 18) {
+      registerHint = ' This is in the taar saptak; use a faster, narrower air stream.';
+    } else if (relative >= 7) {
+      registerHint = ' This note needs a focused upper-register air stream.';
+    }
+    el('techniqueText').textContent = (spec.alternate
+      ? 'Alternate Pa fingering: leave H1 open and close H2–H6. Compare it with all six holes closed against the Sa drone.'
+      : spec.hint) + registerHint;
+    const isUpperPa = modulo12(relative) === 7 && relative >= 7;
+    el('paToggleWrap').hidden = !isUpperPa;
+  }
+  function render() {
+    const thaat = el('thaatSelect').value;
+    const referenceRoot = el('referenceSelect').value;
+    const mappedRoot = el('fluteSelect').value;
+    const keys = thaats[thaat];
+    el('summaryThaat').textContent = thaat;
+    el('summaryFlute').textContent = `${formatRoot(referenceRoot)} reference · ${formatRoot(mappedRoot)} flute`;
+    el('referencePill').textContent = `Reference bansuri Sa = ${formatRoot(referenceRoot)}`;
+    el('flutePill').textContent = `Mapped flute = ${formatRoot(mappedRoot)}`;
+    el('notationPill').textContent = `Notation = ${notationMode === 'sharps' ? 'Sharps (#)' : 'Flats (♭)'}`;
+    updateRootOptionLabels();
+    updateNotationButtons();
+    renderSequence(keys, referenceRoot);
+    renderRows(keys, referenceRoot, mappedRoot);
+    renderDetail(referenceRoot, mappedRoot);
+  }
+
+  el('thaatSelect').addEventListener('change', () => {
+    selectedKey = 'S';
+    el('altPa').checked = false;
+    render();
+  });
+  el('referenceSelect').addEventListener('change', () => {
+    el('altPa').checked = false;
+    render();
+  });
+  el('fluteSelect').addEventListener('change', () => {
+    el('altPa').checked = false;
+    render();
+  });
+  el('altPa').addEventListener('change', render);
+  el('sharpModeBtn').addEventListener('click', () => {
+    notationMode = 'sharps';
+    render();
+  });
+  el('flatModeBtn').addEventListener('click', () => {
+    notationMode = 'flats';
+    render();
+  });
+  el('resetBtn').addEventListener('click', () => {
+    el('thaatSelect').value = 'Bhairav';
+    el('referenceSelect').value = 'C';
+    el('fluteSelect').value = 'C';
+    el('altPa').checked = false;
+    notationMode = 'sharps';
+    selectedKey = 'S';
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
