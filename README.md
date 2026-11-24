@@ -1,5 +1,18 @@
 # Bansuri Fingering Mapper
 
+## HTML website / GitHub Pages
+
+The website reuses the upgraded React Native Paper interface and mapping logic.
+It exports real HTML plus local JavaScript, CSS, icons, and fonts; no backend is
+required. See [WEB.md](WEB.md) for local preview and GitHub Pages deployment.
+
+```powershell
+cd mobile
+npm ci
+npm run build:pages
+npm run preview:pages
+```
+
 ## Android and iOS
 
 The `mobile` folder contains the React Native + Expo port for Android phones,

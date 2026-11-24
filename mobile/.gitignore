@@ -6,6 +6,7 @@ node_modules/
 # Expo
 .expo/
 dist/
+dist-pages/
 web-build/
 expo-env.d.ts
 
@@ -30,8 +31,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# local environment values
+.env
+.env.*
 
 # typescript
 *.tsbuildinfo

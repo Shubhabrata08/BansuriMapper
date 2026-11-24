@@ -2,8 +2,13 @@ import { expect, test } from '@playwright/test';
 
 test('mobile layout and controls match the reference behavior', async ({ page }, testInfo) => {
   const errors: string[] = [];
+  const failedRequests: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/');
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('response', response => { if (response.status() >= 400) failedRequests.push(`${response.status()} ${response.url()}`); });
+  page.on('requestfailed', request => failedRequests.push(request.url()));
+  await page.goto('./');
+  await expect(page).toHaveTitle('Bansuri Fingering Mapper');
   await expect(page.getByTestId('selected-pitch')).toHaveText('C4');
   await expect(page.getByTestId('fingering-code')).toHaveText('XXXOOO');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
@@ -31,5 +36,27 @@ test('mobile layout and controls match the reference behavior', async ({ page },
   await expect(page.getByTestId('selected-swar')).toHaveText('Sa');
   await page.getByRole('button', { name: 'Reset to C Bhairav', exact: true }).click();
   await expect(page.getByTestId('selected-pitch')).toHaveText('C4');
+  await page.reload();
+  await expect(page.getByTestId('selected-pitch')).toHaveText('C4');
+  await page.getByTestId('note-r').click();
+  await expect(page.getByTestId('selected-pitch')).toHaveText('C#4');
   expect(errors).toEqual([]);
+  expect(failedRequests).toEqual([]);
+});
+
+test('exports real HTML and serves assets under the configured path', async ({ request, baseURL }) => {
+  const response = await request.get(baseURL!);
+  expect(response.status()).toBe(200);
+  const html = await response.text();
+  expect(html).toContain('Bansuri Fingering Mapper');
+  expect(html).toContain('Thaat');
+  expect(html).toMatch(/<html[^>]*lang="en"/);
+  const basePath = new URL(baseURL!).pathname.replace(/\/$/, '');
+  const scripts = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(match => match[1]);
+  expect(scripts.length).toBeGreaterThan(0);
+  for (const script of scripts) {
+    expect(new URL(script, baseURL).pathname.startsWith(basePath + '/')).toBe(true);
+  }
+  const missing = await request.get(new URL('not-a-real-asset.js', baseURL).href);
+  expect(missing.status()).toBe(404);
 });
