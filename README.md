@@ -5,6 +5,8 @@
 The website reuses the upgraded React Native Paper interface and mapping logic.
 It exports real HTML plus local JavaScript, CSS, icons, and fonts; no backend is
 required. See [WEB.md](WEB.md) for local preview and GitHub Pages deployment.
+Web-only raga/Tanpura updates and pending native rollout are tracked in
+[CHANGE_CHECKLIST.md](CHANGE_CHECKLIST.md).
 
 ```powershell
 cd mobile

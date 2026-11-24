@@ -14,8 +14,8 @@ test('mobile layout and controls match the reference behavior', async ({ page },
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('initial.png') });
 
-  await page.getByRole('button', { name: /^Reference bansuri \u00b7 Sa, / }).click();
-  await page.getByRole('radio', { name: 'E bansuri \u00b7 Sa sounds E', exact: true }).click();
+  await page.getByRole('button', { name: /^Reference Tanpura, / }).click();
+  await page.getByRole('radio', { name: 'E tanpura', exact: true }).click();
   await expect(page.getByTestId('selected-swar')).toHaveText('Sa');
   await expect(page.getByTestId('selected-pitch')).toHaveText('E4');
   await expect(page.getByTestId('fingering-code')).toHaveText('XOOOOO');
@@ -30,7 +30,7 @@ test('mobile layout and controls match the reference behavior', async ({ page },
   await page.getByTestId('fingering-detail').scrollIntoViewIfNeeded();
   await page.screenshot({ path: testInfo.outputPath('alternate-pa.png') });
 
-  await page.getByRole('button', { name: /^Thaat, / }).click();
+  await page.getByRole('button', { name: /^Raga, / }).click();
   await page.getByRole('radio', { name: 'Marwa', exact: true }).click();
   await expect(page.getByTestId('note-P')).toHaveCount(0);
   await expect(page.getByTestId('selected-swar')).toHaveText('Sa');
@@ -49,7 +49,8 @@ test('exports real HTML and serves assets under the configured path', async ({ r
   expect(response.status()).toBe(200);
   const html = await response.text();
   expect(html).toContain('Bansuri Fingering Mapper');
-  expect(html).toContain('Thaat');
+  expect(html).toContain('Raga');
+  expect(html).toContain('Reference Tanpura');
   expect(html).toMatch(/<html[^>]*lang="en"/);
   const basePath = new URL(baseURL!).pathname.replace(/\/$/, '');
   const scripts = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(match => match[1]);

@@ -1,16 +1,20 @@
 # HTML website and GitHub Pages
 
-The website is a first-class web build of the same upgraded Paper UI used by the
-Android and iOS app, not an iframe or a second copy of the mapping implementation.
-It includes the original thaats, independent flute keys, notation choices,
-fingering diagrams, register guidance, alternate Pa, reset, and reference links.
+The website uses the same Paper components and pitch/fingering engine as the
+native apps, not an iframe. Its web-specific screen now provides 66 alphabetically
+arranged raga reference inventories and a Reference Tanpura selector with options
+such as `E tanpura` and `F tanpura`. The mapped-flute selector remains unchanged.
+Native apps still use their existing thaat/reference-bansuri selectors; rollout
+status is tracked in [CHANGE_CHECKLIST.md](CHANGE_CHECKLIST.md).
 The original single-file HTML remains in `Tests\Reference.html` as the test oracle.
 
 ## Source and build output
 
 - HTML document: `mobile\src\app\+html.tsx`.
 - Web entry/metadata: `mobile\src\app\index.web.tsx`.
-- Shared interface: `mobile\src\screens\MapperScreen.tsx`.
+- Web interface: `mobile\src\screens\MapperScreen.web.tsx`.
+- Native interface, unchanged: `mobile\src\screens\MapperScreen.tsx`.
+- Raga data and sources: `mobile\src\domain\raga-catalog.web.ts`.
 - Shared calculations: `mobile\src\domain\mapper.ts` (unchanged).
 - Generated website: `mobile\dist-pages\index.html` and its sibling assets.
 
@@ -18,6 +22,11 @@ The generated site contains prerendered HTML and uses JavaScript for interaction
 Assets are hosted with the site, including the Material icon font; no CDN UI
 library or application backend is needed. The `.nojekyll` marker preserves Expo's
 underscore-prefixed asset directories.
+
+Raga notes are pitch-ordered reference inventories, not aroha/avaroha or complete
+performance instructions. Variant choices are recorded with the catalog entries
+and displayed where relevant. The Reference Tanpura selects the tonic key only;
+no audio playback is added, and the existing pitch/octave calculations are reused.
 
 ## Build and preview
 
