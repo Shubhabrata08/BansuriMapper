@@ -9,11 +9,14 @@ intentionally deferred: this request applies only to the HTML/web component.
 | Arrange all raga options alphabetically, A-Z | [x] | [ ] | [ ] | [ ] | Actual dropdown order and the full requested name set verified. |
 | Use documented raga reference note inventories | [x] | [ ] | [ ] | [ ] | Mixed note forms and variant choices are recorded; the parent thaat is not substituted. |
 | Rename the second selector to Reference Tanpura | [x] | [ ] | [ ] | [ ] | Web labels, summary, help text and metadata only. |
-| Use options such as E tanpura and F tanpura | [x] | [ ] | [ ] | [ ] | Pitch ordering and sharp/flat spelling verified. |
-| Keep the mapped-flute selector as bansuri options | [x] | [x] | [x] | [x] | Third selector verified on web; native screens remain unchanged. |
+| Use note labels such as E tanpura and F tanpura | [x] | [ ] | [ ] | [ ] | Preserve the Tanpura naming when changing the selector control. |
+| Keep the mapped instrument labeled as bansuri | [x] | [x] | [x] | [x] | Tanpura naming must not leak into the mapped-instrument selector. |
+| Replace web key dropdowns with horizontal, 12-step note sliders | [x] | [ ] | [ ] | [ ] | Reference Tanpura and Mapped bansuri; mouse, touch and keyboard support verified. |
+| Put web mapping beside the controls on non-mobile viewports | [x] | [ ] | [ ] | [ ] | From 768px at standard text scale; phone stacking and tablet/desktop mapping visibility verified. |
 | Preserve pitch, frequency and fingering calculations | [x] | [x] | [x] | [x] | Calculation modules unchanged; original parity tests and native UI tests pass. |
-| Verify GitHub Pages HTML, assets, and phone/tablet interactions | [x] | N/A | N/A | N/A | Six browser tests pass under `/BansuriMapper/`. |
-| Commit the web update | [x] | N/A | N/A | N/A | Web-only source, tests, documentation and this checklist. |
+| Verify GitHub Pages HTML, assets, and phone/tablet/desktop interactions | [x] | N/A | N/A | N/A | 15 browser tests pass under `/BansuriMapper/`, including hydration and all 12 slider steps. |
+| Commit the raga/Tanpura catalog update | [x] | N/A | N/A | N/A | Commit `5b22037`. |
+| Commit the slider/layout update | [x] | N/A | N/A | N/A | Included in the web note-slider and responsive-layout commit. |
 | Deploy the web update | [ ] | N/A | N/A | N/A | Deployment remains a manual GitHub Pages workflow. |
 
 ## Catalog policy
@@ -40,6 +43,6 @@ intentionally deferred: this request applies only to the HTML/web component.
 | TypeScript and ESLint | Passed |
 | Catalog, web state, original HTML parity and existing native component tests | 94 tests passed; includes all 45,504 original reference cases |
 | Additional Android native-screen regression | 4 tests passed |
-| Pages-path browser tests | 6 tests passed on phone/tablet viewports |
+| Pages-path browser tests | 15 tests passed on phone/tablet/desktop viewports |
 | Existing Windows/native-screen/core calculation source diff | Unchanged by this update |
-| Raga and Tanpura dropdown screenshots | `mobile/artifacts/playwright` (ignored build/test output) |
+| Raga selector and note-slider/layout screenshots | Phone, tablet and desktop screenshots reviewed in `mobile/artifacts/playwright` (ignored build/test output) |

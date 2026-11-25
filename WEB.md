@@ -2,8 +2,9 @@
 
 The website uses the same Paper components and pitch/fingering engine as the
 native apps, not an iframe. Its web-specific screen now provides 66 alphabetically
-arranged raga reference inventories and a Reference Tanpura selector with options
-such as `E tanpura` and `F tanpura`. The mapped-flute selector remains unchanged.
+arranged raga reference inventories. Reference Tanpura and Mapped bansuri use
+horizontal sliders with 12 chromatic steps from C through B. Their readouts use
+labels such as `E tanpura` and `F bansuri`, and follow the selected sharp/flat spelling.
 Native apps still use their existing thaat/reference-bansuri selectors; rollout
 status is tracked in [CHANGE_CHECKLIST.md](CHANGE_CHECKLIST.md).
 The original single-file HTML remains in `Tests\Reference.html` as the test oracle.
@@ -27,6 +28,13 @@ Raga notes are pitch-ordered reference inventories, not aroha/avaroha or complet
 performance instructions. Variant choices are recorded with the catalog entries
 and displayed where relevant. The Reference Tanpura selects the tonic key only;
 no audio playback is added, and the existing pitch/octave calculations are reused.
+
+On viewports at least 768px wide (at standard text scale), controls are on the
+left and the swara map begins in a second column, visible without scrolling down
+past the controls. The selected fingering detail sits below the controls and the
+reference-note inventory follows the map. Mobile and large-text layouts remain
+stacked; selecting a note on mobile scrolls its detail into view. The sliders
+support dragging/tapping, arrow keys, Home, and End.
 
 ## Build and preview
 
@@ -57,7 +65,7 @@ Normal mobile builds do not set it and retain their existing configuration.
 5. Open `https://shubhabrata08.github.io/BansuriMapper/`.
 
 The workflow performs a clean dependency install, type checking, linting, HTML
-parity/component tests, and phone/tablet browser tests before deploying. It uses
+parity/component tests, and phone/tablet/desktop browser tests before deploying. It uses
 GitHub's temporary workflow identity; no personal access token or custom secret
 is needed. Pushes run the build/test job only. Publishing is deliberately manual
 through **Run workflow**, so committing changes alone does not publish them.
