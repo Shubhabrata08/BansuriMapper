@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { setNote } from './helpers/notes';
+import { expectFingering, setNote } from './helpers/notes';
 
 test('note sliders snap to all twelve keys, support pointer input and keep the existing octave convention', async ({ page }, testInfo) => {
   await page.goto('./');
@@ -43,10 +43,10 @@ test('note sliders snap to all twelve keys, support pointer input and keep the e
   await page.getByRole('button', { name: 'Reset to C Bhairav', exact: true }).click();
   await page.getByTestId('note-P').click();
   await page.getByRole('switch', { name: 'Use alternate Pa fingering', exact: true }).click();
-  await expect(page.getByTestId('fingering-code')).toHaveText('OXXXXX');
+  await expectFingering(page, 'OXXXXX');
   await setNote(tanpura, 1);
   await setNote(tanpura, 0);
-  await expect(page.getByTestId('fingering-code')).toHaveText('XXXXXX');
+  await expectFingering(page, 'XXXXXX');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 

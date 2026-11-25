@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { ragas } from '../src/domain/raga-catalog.web';
-import { setNote } from './helpers/notes';
+import { expectFingering, setNote } from './helpers/notes';
 
 test('web raga catalog stays alphabetical and both note sliders preserve independent keys', async ({ page }, testInfo) => {
   await page.goto('./');
@@ -25,11 +25,11 @@ test('web raga catalog stays alphabetical and both note sliders preserve indepen
   await setNote(tanpura, 4);
   await expect(tanpura).toHaveAttribute('aria-valuetext', 'E tanpura');
   await expect(page.getByTestId('selected-pitch')).toHaveText('E4');
-  await expect(page.getByTestId('fingering-code')).toHaveText('XOOOOO');
+  await expectFingering(page, 'XOOOOO');
   await setNote(bansuri, 4);
   await expect(bansuri).toHaveAttribute('aria-valuetext', 'E bansuri');
   await expect(page.getByTestId('selected-pitch')).toHaveText('E4');
-  await expect(page.getByTestId('fingering-code')).toHaveText('XXXOOO');
+  await expectFingering(page, 'XXXOOO');
 
   await page.getByRole('button', { name: 'Flats', exact: true }).click();
   const flatKeys = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];

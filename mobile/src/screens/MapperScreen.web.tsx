@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChoiceField } from '../components/ChoiceField';
 import { NoteSlider } from '../components/NoteSlider.web';
 import { Hole, HoleDiagram } from '../components/HoleDiagram';
-import { colors, monospace } from '../components/theme';
+import { colors } from '../components/theme';
 import { mapNote, rootName } from '../domain/mapper';
 import { getRaga, ragaOptions } from '../domain/raga-catalog.web';
 import { initialRagaState, mapRaga, ragaReducer } from '../domain/raga-mapper.web';
@@ -18,6 +18,10 @@ const references = [
 const subscribeHydration = () => () => undefined;
 const clientSnapshot = () => true;
 const serverSnapshot = () => false;
+
+function swaraText(text: string) {
+  return text.replace(/\bshuddha[ -]/gi, '');
+}
 
 export default function MapperScreen() {
   const [state, dispatch] = useReducer(ragaReducer, initialRagaState);
@@ -88,7 +92,7 @@ export default function MapperScreen() {
               ))}
       </View>
       <Text variant="bodySmall" style={styles.muted}>Notes are ordered by pitch for fingering reference, not as an aroha/avaroha. Raga movement and ornamentation are not represented.</Text>
-      {!!raga.variantNote && <Text testID="raga-variant-note" variant="bodySmall" style={styles.muted}>{raga.variantNote}</Text>}
+      {!!raga.variantNote && <Text testID="raga-variant-note" variant="bodySmall" style={styles.muted}>{swaraText(raga.variantNote)}</Text>}
     </Surface>
   );
 
@@ -101,7 +105,7 @@ export default function MapperScreen() {
           <View style={styles.pitchGroup}>
             <Text testID="selected-pitch" variant="headlineMedium" style={styles.alignRight}>{detail.pitch}</Text>
             <Text testID="selected-frequency" style={[styles.small, styles.alignRight]}>{`${detail.frequency.toFixed(1)} Hz \u00b7 sounding pitch`}</Text>
-            <Text testID="selected-relative" style={[styles.relative, styles.alignRight]}>{detail.relativeText}</Text>
+            <Text testID="selected-relative" style={[styles.relative, styles.alignRight]}>{swaraText(detail.relativeText)}</Text>
           </View>
         </View>
         <Divider />
@@ -112,12 +116,6 @@ export default function MapperScreen() {
             <View key={value} style={styles.legendItem}><Hole value={value} size={10} /><Text style={styles.small}>{label}</Text></View>
                 ))}
         </View>
-        <Surface elevation={0} style={styles.technique}>
-          <Text testID="technique-title" variant="titleSmall" style={styles.gold}>{detail.title}</Text>
-          <Text testID="technique-hint" variant="bodyMedium" style={styles.muted}>{detail.hint}</Text>
-        </Surface>
-        <Text style={styles.small}>{'Fingering code \u00b7 X closed / H half / O open'}</Text>
-        <Text testID="fingering-code" style={styles.code}>{detail.pattern}</Text>
         {detail.canAlternate && (
         <View style={styles.alternate}>
           <Text style={[styles.small, styles.flex]}>{'Use alternate Pa fingering\n(H1 open, H2\u2013H6 closed)'}</Text>
@@ -136,7 +134,7 @@ export default function MapperScreen() {
         <View style={styles.noteList} testID="note-list">
           {notes.map(note => (
             <Card key={note.key} mode="outlined" style={[styles.noteCard, state.selected === note.key && styles.selected]}>
-              <TouchableRipple testID={`note-${note.key}`} accessibilityRole="button" accessibilityState={{ selected: state.selected === note.key }} accessibilityLabel={`${note.name}, ${note.pitch}, ${note.relativeText}, ${note.frequency.toFixed(1)} Hz, ${note.pattern}`} accessibilityHint="Show this swara's fingering detail" onPress={() => {
+              <TouchableRipple testID={`note-${note.key}`} accessibilityRole="button" accessibilityState={{ selected: state.selected === note.key }} accessibilityLabel={`${swaraText(note.name)}, ${note.pitch}, ${swaraText(note.relativeText)}, ${note.frequency.toFixed(1)} Hz, ${note.pattern}`} accessibilityHint="Show this swara's fingering detail" onPress={() => {
                     dispatch({ type: 'select', value: note.key });
                     if (!wide) document.getElementById('web-fingering-detail')?.scrollIntoView({ block: 'start', behavior: 'auto' });
                   }} style={styles.noteRipple}>
@@ -144,10 +142,10 @@ export default function MapperScreen() {
                   <Text variant="headlineSmall" style={styles.noteToken}>{note.token}</Text>
                   <View style={styles.noteBody}>
                     <View style={styles.noteHead}>
-                      <View style={styles.flex}><Text variant="titleSmall">{note.name}</Text><Text style={styles.small}>{note.subtitle}</Text></View>
+                      <View style={styles.flex}><Text variant="titleSmall">{swaraText(note.name)}</Text><Text style={styles.small}>{note.subtitle}</Text></View>
                       <Text variant="titleLarge">{note.pitch}</Text>
                     </View>
-                    <Text style={styles.small}>{`${note.relativeText} \u00b7 ${note.frequency.toFixed(1)} Hz`}</Text>
+                    <Text style={styles.small}>{`${swaraText(note.relativeText)} \u00b7 ${note.frequency.toFixed(1)} Hz`}</Text>
                     <HoleDiagram pattern={note.pattern} />
                   </View>
                 </View>
@@ -241,8 +239,6 @@ const styles = StyleSheet.create({
   alignRight: { textAlign: 'right' },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  technique: { backgroundColor: colors.technique, padding: 16, borderRadius: 12, gap: 8 },
-  code: { fontFamily: monospace, color: colors.ink, letterSpacing: 3, fontSize: 17 },
   alternate: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   flex: { flex: 1, minWidth: 0 },
   noteList: { gap: 10 },
